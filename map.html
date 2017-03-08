@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Facebook Friend Map 0.7</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <script type="text/javascript" src="all_new_friend_locations.js"></script>
+  <body>
+    <div id="map"></div>
+    <script>
+      function initMap() {
+        var myLatLng = {lat: 30.000, lng: -100.000};
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 4,
+          center: myLatLng
+        });
+        place_name_markers(friend_data, map)
+      }
+
+      function place_name_markers(list, map) {
+        for (var i = 0, len = list.length; i < len; i++) {
+          new google.maps.Marker({
+                map: map,
+                position: list[i]["locality_geocode"],
+                title: list[i]["name"]
+              });
+        }
+      }
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0WPE6N1f71Cdi_Z913fzATGeWvpaIP4Y&callback=initMap">
+  </script>
+</body>
+</html>
