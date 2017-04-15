@@ -30,11 +30,15 @@
 
       function place_name_markers(list, map) {
         for (var i = 0, len = list.length; i < len; i++) {
-          new google.maps.Marker({
+          marker = new google.maps.Marker({
                 map: map,
                 position: list[i]["locality_geocode"],
-                title: list[i]["name"]
+                title: list[i]["name"],
+                url: list[i]["url"]
               });
+          google.maps.event.addListener(marker, 'click', function() {
+              window.open(this.url);
+          });
         }
       }
   </script>
