@@ -31,7 +31,7 @@ def add_geocode_to_friend_json(friend):
 def add_geocodes_to_all_friends(json_file, new_output_file):
 	with open(json_file) as in_file:
 		friends = json.load(in_file)
-	geocoded_friends =[add_geocode_to_friend_json(friend) for friend in friends]
+	geocoded_friends =[add_geocode_to_friend_json(friend) for friend in friends if friend["success"]]
 	geocoded_friends_json = json.dumps(geocoded_friends)
 	with open(new_output_file, 'w+') as file_out:
 		file_out.write("var friend_data = " + geocoded_friends_json + ";")

@@ -13,39 +13,36 @@ def process_fb_friends_html_page(friend_html_filename, url_filename, limit = Non
       for fu in friend_urls:
         new_list_file.write(fu)
 
-def is_good_result(friend_dictionary):
-  # Using a full-fledged function not a lambda 'cuz I expect to expand this in the future
-  return friend_dictionary and friend_dictionary["name"] != "ttstamp"
+def first_regex_or_false(regex, searched_string):
+  namereg = re.findall(regex, searched_string)
+  return namereg[0].encode('utf-8', 'replace') if namereg else ""
 
 def process_friend_url(url):
   try:
     print "fetching url " + url
     result_dictionary = process_friend_html(requests.get(url).text)
+    result_dictionary["url"] = url
     print result_dictionary
-    print is_good_result(result_dictionary)
     return result_dictionary
   except (UnicodeEncodeError):
     print "!! Unicode Error for " + url
-    return {}
+    return {"url": url, "success": False, "error": "Unicode"}
 
 def process_friend_html(req):
   entry = {}
-  namereg = re.findall("name\":\"(.*?)\"", req)
-  entry["name"] = str(namereg[0]) if namereg else "Unknown"
-  addr = re.findall("addressLocality\":\"(.*?)\"", req)
-  entry["locality"] = str(addr[0]) if addr else "Unknown"
-  section = re.findall("pagelet_eduwork(.*?)pagelet_all_favorites", req)
-  places = re.findall("href=\"https://www.facebook.com/.*?>(.*?)<", section[0]) if section else "None"
-  entry["places"] = [str(place) for place in places if place]
+  entry["name"] = first_regex_or_false("name\":\"(.*?)\"", req)
+  section = first_regex_or_false("pagelet_eduwork(.*?)pagelet_all_favorites", req)
+  entry["locality"] = first_regex_or_false("addressLocality\":\"(.*?)\"", req) 
+  if section:
+    entry["places"] = [str(place) for place in re.findall("href=\"https://www.facebook.com/.*?>(.*?)<", section) if place]
+    entry["locality"] = entry["locality"] or entry["places"][0]
+  entry["success"] = entry["name"] and entry["locality"]
   return entry
 
 def process_all_urls(urls_file, json_result_file):
   with open(urls_file, 'r+') as file_in:
     name_address_list = [process_friend_url(url) for url in file_in]
-  print str(len(name_address_list)) + " friends processed"
-
-  name_address_list = filter(is_good_result, name_address_list)
-  print str(len(name_address_list)) + " Valid Jsons Formed"
+  print str(len(name_address_list)) + " friends processed, " + str(len([k for k in name_address_list if k["success"]])) + " successful."
 
   name_address_json = json.dumps(name_address_list)
   with open(json_result_file, 'w+') as file_out:
