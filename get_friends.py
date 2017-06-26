@@ -1,5 +1,7 @@
 import re, mmap, requests, json
 
+from util import *
+
 def process_fb_friends_html_page(friend_html_filename, url_filename, limit = None):
   with open(friend_html_filename, 'r+') as f:
     data = mmap.mmap(f.fileno(), 0)
@@ -13,9 +15,6 @@ def process_fb_friends_html_page(friend_html_filename, url_filename, limit = Non
       for fu in friend_urls:
         new_list_file.write(fu)
 
-def first_regex_or_false(regex, searched_string):
-  namereg = re.findall(regex, searched_string)
-  return namereg[0].encode('utf-8', 'replace') if namereg else ""
 
 def process_friend_url(url):
   try:
@@ -31,8 +30,8 @@ def process_friend_url(url):
 def process_friend_html(req):
   entry = {}
   entry["name"] = first_regex_or_false("name\":\"(.*?)\"", req)
+  entry["locality"] = first_regex_or_false("addressLocality\":\"(.*?)\"", req)
   section = first_regex_or_false("pagelet_eduwork(.*?)pagelet_all_favorites", req)
-  entry["locality"] = first_regex_or_false("addressLocality\":\"(.*?)\"", req) 
   if section:
     entry["places"] = [str(place) for place in re.findall("href=\"https://www.facebook.com/.*?>(.*?)<", section) if place]
     entry["locality"] = entry["locality"] or entry["places"][0]

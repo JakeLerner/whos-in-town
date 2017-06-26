@@ -1,15 +1,14 @@
 import re, mmap, requests, json
-
-def read_secrets(secrets_filename):
-	with open(secrets_filename) as secrets_file:
-	    secrets_json = json.load(secrets_file)
-	    return secrets_json
+from util import *
 
 def get_google_geocode(key, location):
 	print "Grabbing google geocode for " + location
-	request_url = "https://maps.googleapis.com/maps/api/geocode/json?address={0}&key={1}".format(location, key)
-	result_json = json.loads(requests.get(request_url).text)
-	return result_json["results"][0] if result_json["status"] == "OK" else None
+	try:
+		request_url = "https://maps.googleapis.com/maps/api/geocode/json?address={0}&key={1}".format(location, key)
+		result_json = json.loads(requests.get(request_url).text)
+		return result_json["results"][0] if result_json["status"] == "OK" else None
+	except (UnicodeEncodeError):
+		return None
 
 def add_geocode_to_friend_json(friend):
 	google_key = read_secrets("../secrets.json")["google_geocoding_api_key"]
@@ -33,6 +32,7 @@ def add_geocodes_to_all_friends(json_file, new_output_file):
 		friends = json.load(in_file)
 	geocoded_friends =[add_geocode_to_friend_json(friend) for friend in friends if friend["success"]]
 	geocoded_friends_json = json.dumps(geocoded_friends)
+
 	with open(new_output_file, 'w+') as file_out:
 		file_out.write("var friend_data = " + geocoded_friends_json + ";")
 	print "done"
