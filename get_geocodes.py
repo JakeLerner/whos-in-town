@@ -11,7 +11,7 @@ def get_google_geocode(key, location):
 		return None
 
 def add_geocode_to_friend_json(friend):
-	google_key = read_secrets("../secrets.json")["google_geocoding_api_key"]
+	google_key = read_secrets()["google_geocoding_api_key"]
 	primary_location = friend["locality"]
 	primary_geocode_json = get_google_geocode(google_key, primary_location)
 	if primary_geocode_json:

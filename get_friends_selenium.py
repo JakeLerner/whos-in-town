@@ -12,13 +12,11 @@ def first_regex_or_false(regex, searched_string):
 
 def setup_selenium():
 	# Set up Driver
-	chromedriver = "/Users/jrlerner/Downloads/chromedriver"
-	os.environ["webdriver.chrome.driver"] = chromedriver
-	driver = webdriver.Chrome(chromedriver)
+	driver = webdriver.Chrome()
 
 	# Login to Facebook
-	fb_password = read_secrets("../secrets.json")["fb_password"]
-	fb_login = read_secrets("../secrets.json")["fb_login"]
+	fb_password = read_secrets()["fb_password"]
+	fb_login = read_secrets()["fb_login"]
 
 	driver.get("http://www.facebook.com")
 	name_elem = driver.find_element_by_id("email")
@@ -46,24 +44,6 @@ def find_places(req):
 	word_list = ["[Ll]ives ", "[Ww]orks ", "[Ss]tudies ", "[Ss]tudied ", "[Ww]orked ", "[Ww]ent to ", " at", "[Ff]rom "]
 	return filter(bool, [first_regex_or_false(word + ".*?<.*?>(.*?)<", req) for word in word_list])
 
-
-# def fill_in_the_blanks(json_file, new_output_file):
-# 	with open(json_file) as in_file:
-# 		friends = json.load(in_file)
-# 	filled_in_friends =[add_geocode_to_friend_json(friend) for friend in friends if friend["success"]]
-# 	geocoded_friends_json = json.dumps(geocoded_friends)
-# 	with open(new_output_file, 'w+') as file_out:
-# 		file_out.write("var friend_data = " + geocoded_friends_json + ";")
-# 	print "done"
-# def process_urls_selenium(url_file, output_file)
-
-
-# with open(url_file, 'r+') as file_in:
-# 	for item in file_in:
-# 		about_url = item.split("?")[0] + "/about"
-# 		req_html = get_page_with_selenium(driver, about_url)
-# 		result = process_about_page(req_html)
-# 		print result
 
 def process_friend_url_selenium(url, verbose = 0):
 	about_url = url.split("?")[0] + "/about"
@@ -93,16 +73,3 @@ def process_all_urls_selenium(urls_file, json_result_file, limit = None, offset 
 	name_address_json = json.dumps(name_address_list)
 	with open(json_result_file, 'w+') as file_out:
 	 	file_out.write(name_address_json)
-
-# all_failed_urls_from_json("all_friend_locations.json", "failed_friend_urls.txt")
-# process_all_urls("failed_friend_urls.txt", "some_failed_friend_locations.json", 20)
-# print "SECOND BATCH"
-# process_all_urls("failed_friend_urls.txt", "some_more_failed_friend_locations.json", 40, 20)
-# append_json_files("some_failed_friend_locations.json", "some_more_failed_friend_locations.json", "failed_friend_locations.json")
-# with open("failed_friend_locations.json") as test:
-# 	print len([i for i in json.load(test)])
-
-
-
-#driver = setup_selenium()
-#process_friend_url_selenium("https://www.facebook.com/ralucam?lst", 2)

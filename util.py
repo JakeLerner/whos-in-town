@@ -1,7 +1,7 @@
 import re, mmap, requests, json, os
 
-def read_secrets(secrets_filename):
-	with open(secrets_filename) as secrets_file:
+def read_secrets():
+	with open("secrets.json") as secrets_file:
 		secrets_json = json.load(secrets_file)
 		return secrets_json
 
@@ -72,7 +72,7 @@ def incremental_process(function, input_file, output_file, increment):
 
 	#function should take as input an input filename and an output filename
 	with open(input_file, 'r+') as file_in:
-		increments = int(file_len(input_file) / increment)
+		increments = int(file_len(input_file) / increment) + 1
 		print "File length was " + str(file_len(input_file)) + ", increment length is " + str(increment) + ", so there are " + str(increments) + " increments."
 		#sublists = [file_in[i * increment : (i + 1) * increment] for i in range(increments)]
 		flush_array_to_file([], output_file)
