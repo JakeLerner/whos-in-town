@@ -6,10 +6,6 @@ from util import *
 
 import os, re, mmap, requests, json
 
-def first_regex_or_false(regex, searched_string):
-  namereg = re.findall(regex, searched_string)
-  return namereg[0].encode('utf-8', 'replace') if namereg else ""
-
 def setup_selenium():
 	# Set up Driver
 	driver = webdriver.Chrome()
@@ -34,32 +30,52 @@ def get_page_with_selenium(driver, url):
 def process_about_page(html):
 	entry = {}
 	entry["name"] = first_regex_or_false("pageTitle\">(.*?)<", html)
-	entry["places"] = find_places(html)
+	verbose_places = find_places(html)
+	print "Verbose Places:"
+	print verbose_places
+	entry["verbose_places"] = verbose_places
+	entry["places"] = [item["name"] for item in verbose_places]
 	entry["locality"] = entry["places"][0] if entry["places"] else ""
 	entry["success"] = entry["name"] and entry["locality"]
 	return entry
 
-
 def find_places(req):
-	word_list = ["[Ll]ives ", "[Ww]orks ", "[Ss]tudies ", "[Ss]tudied ", "[Ww]orked ", "[Ww]ent to ", " at", "[Ff]rom "]
-	return filter(bool, [first_regex_or_false(word + ".*?<.*?>(.*?)<", req) for word in word_list])
+	word_list = ["[Ll]ive[sd] ", "[Ww]orks ", "[Ww]orked ", "[Ss]tudie[sd] ", "[Ww]ent to ", "[\w]* at", "[Ff]rom "] # could be "[\w*] at"
+	places =  filter(bool, [re.findall("(" + word + ".*?)<.*?>(.*?)<", req) for word in word_list])
+	result = {}
+	for place in [p[0] for p in places]:
+		print "place in find places is"
+		print place
+		name = place[1]
+		if len(name) > 3:
+			reason = place[0]
+			if name in result.keys():
+				result[name]["reasons"].append(reason)
+			else:
+				result[name] = {"name" : name, "reasons": [reason]}
+	return result.values()
 
 
-def process_friend_url_selenium(url, verbose = 0):
-	about_url = url.split("?")[0] + "/about"
-	req_html = get_page_with_selenium(driver, about_url)
-	result = process_about_page(req_html)
-	result["url"] = url
-	if verbose and result["success"]:
-		print "Success for " + result["name"] + ": " + result["success"]
+def process_friend_url_selenium(url, verbose = 0, sleepy = True):
+	try:
+		about_url = url.split("?")[0] + "/about"
+		req_html = get_page_with_selenium(driver, about_url)
+		result = process_about_page(req_html)
+		result["url"] = url
+		if verbose and result["success"]:
+			print "Success for " + result["name"] + ": " + result["success"]
+		if verbose and not result["success"]:
+			print "Failed for " + url
+		if verbose > 1:
+			print result
+		if sleepy:
+			quick_sleep()
+		return result
+	except KeyboardInterrupt:
+	    raise
+	except Exception as e:
+	    return {"success": False, "error": e.message}
 
-	if verbose and not result["success"]:
-		print "Failed for " + url
-
-	if verbose > 1:
-		print result
-
-	return result
 
 def process_all_urls_selenium(urls_file, json_result_file, limit = None, offset = None):
 	global driver

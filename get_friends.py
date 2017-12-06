@@ -2,30 +2,19 @@ import re, mmap, requests, json
 
 from util import *
 
-def process_fb_friends_html_page(friend_html_filename, url_filename, limit = None):
-  with open(friend_html_filename, 'r+') as f:
-    data = mmap.mmap(f.fileno(), 0)
-    friend_urls = re.findall('https://www\.facebook\.com/.*?location=friends_tab', data)
-    friend_urls = list(set([f + "\n" for f in friend_urls if len(f) < 100]))
-    if limit:
-      friend_urls = friend_urls[:limit]
-    print("Total URLs Found:")
-    print(len(friend_urls))
-    with open(url_filename, 'w+') as new_list_file:
-      for fu in friend_urls:
-        new_list_file.write(fu)
-
-
 def process_friend_url(url):
   try:
-    print "fetching url " + url
-    result_dictionary = process_friend_html(requests.get(url).text)
-    result_dictionary["url"] = url
+    stripped_url = url.rstrip()
+    # url = url + "HLKJLKJ"
+    #url = url.split("?")[0]
+    print "fetching url " + stripped_url
+    result_dictionary = process_friend_html(requests.get(stripped_url).text)
+    result_dictionary["url"] = stripped_url
     print result_dictionary
     return result_dictionary
   except (UnicodeEncodeError):
-    print "!! Unicode Error for " + url
-    return {"url": url, "success": False, "error": "Unicode"}
+    print "!! Unicode Error for " + stripped_url
+    return {"url": stripped_url, "success": False, "error": "Unicode"}
 
 def process_friend_html(req):
   entry = {}

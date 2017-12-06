@@ -1,4 +1,7 @@
-import re, mmap, requests, json, os
+import re, mmap, requests, json, os, math, random, time
+
+def quick_sleep():
+  time.sleep(random.randint(0, 2) + random.uniform(0, 1))
 
 def read_secrets():
 	with open("secrets.json") as secrets_file:
@@ -38,8 +41,8 @@ def append_files(file_1, file_2, output_file):
 def process_fb_friends_html_page(friend_html_filename, url_filename, limit = None):
   with open(friend_html_filename, 'r+') as f:
 	data = mmap.mmap(f.fileno(), 0)
-	friend_urls = re.findall('https://www\.facebook\.com/.*?location=friends_tab', data)
-	friend_urls = list(set([f + "\n" for f in friend_urls if len(f) < 100]))
+	friend_urls = re.findall('https://www.facebook.com/[a-z.0-9]+?\?', data)
+	friend_urls = list(set([f + "location=friends_tab\n" for f in friend_urls if len(f) < 100]))
 	if limit:
 	  friend_urls = friend_urls[:limit]
 	print("Total URLs Found:")
@@ -91,7 +94,4 @@ def incremental_process(function, input_file, output_file, increment):
 			os.remove(tmp_out)
 			print "FINISHED ITERATION " + str(i)
 			print "OUTPUT FILE " + output_file + " NOW HAS " + str(file_len(output_file)) + " ENTRIES."
-
-
-
 
