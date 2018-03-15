@@ -1,5 +1,5 @@
 import re, mmap, requests, json
-from util import *
+from lib import *
 
 def get_google_geocode(location, key):
 	print "Grabbing google geocode for " + location
@@ -9,22 +9,6 @@ def get_google_geocode(location, key):
 		return result_json["results"][0] if result_json["status"] == "OK" else None
 	except (UnicodeEncodeError):
 		return None
-
-def add_geocode_to_friend_json(friend, key):
-	primary_location = friend["locality"]
-	primary_geocode_json = get_google_geocode(primary_location, key)
-	if primary_geocode_json:
-		primary_geocode_lat_lng = primary_geocode_json["geometry"]["location"]
-		primary_geocode_county = [c["long_name"] for c in primary_geocode_json["address_components"] if "administrative_area_level_2" in c["types"]]
-		primary_geocode_state = [c["long_name"] for c in primary_geocode_json["address_components"] if "administrative_area_level_1" in c["types"]]
-		print primary_geocode_state
-		print primary_geocode_county
-		print primary_geocode_lat_lng
-		friend["locality_geocode"] = primary_geocode_lat_lng
-	else:
-		print "Failed to geocode"
-		friend["locality_geocode"] = {"lat": 0.00, "lng": 0.00}
-	return friend
 
 def add_geocodes_to_verbose_places(friend, key, tolerance = 10):
 	geocoded_places = []
@@ -53,13 +37,25 @@ def add_geocodes_to_verbose_places(friend, key, tolerance = 10):
 
 
 def add_geocodes_to_all_friends(json_file, new_output_file):
-	google_key = read_secrets()["google_geocoding_api_key"]
+	google_key = get_geocoding_credentials()["google_geocoding_api_key"]
 	with open(json_file) as in_file:
 		friends = json.load(in_file)
 	geocoded_friends =[add_geocodes_to_verbose_places(friend, google_key) for friend in friends]
-	#geocoded_friends =[add_geocode_to_friend_json(friend, google_key) for friend in friends if friend["success"]]
 	geocoded_friends_json = json.dumps(geocoded_friends)
 
 	with open(new_output_file, 'w+') as file_out:
 		file_out.write("var friend_data = " + geocoded_friends_json + ";")
 	print "done"
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--prefix", help="List of URLs of friends to locate")
+	parser.add_argument("--secrets", help="Path of file containing fb credentials and API keys")
+	parser.add_argument("--test", help="Only run the code on the first 20 names",
+	                    action="store_true")
+	args = parser.parse_args()
+	prefix = args.prefix and args.prefix + '_'
+	data_directory = os.path.dirname(os.path.realpath(__file__)) + "/data/"
+	friend_json = data_directory + prefix + "friend_places.json"
+	geocoded_friends_js = data_directory + prefix + "friend_places.js"
+	add_geocodes_to_all_friends(friend_json, geocoded_friends_js)
