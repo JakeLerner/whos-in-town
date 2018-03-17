@@ -15,7 +15,7 @@
       }
     </style>
   </head>
-  <script type="text/javascript" src="friend_locations.js"></script>
+  <script type="text/javascript" src="friend_places.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
   <body>
     <div id="map"></div>
@@ -28,9 +28,6 @@
         });
         place_name_markers(friend_data, map)
       }
-
-      //var iw = new google.maps.InfoWindow();
-      //var iw = new google.maps.InfoWindow();
       function place_name_markers(list, map) {
         var oms = new OverlappingMarkerSpiderfier(map, {
           markersWontMove: true,
@@ -38,34 +35,34 @@
           basicFormatEvents: true
         });
         
+        // Iterate through each person in the list.
         for (var i = 0, len = list.length; i < len; i++) {
           var places = list[i]["verbose_places"]
+
+          // Each person can be associated with multiple locations. Create a marker for each.
           for (var j = 0; j < places.length; j++) {
             marker = new google.maps.Marker({
-                  //map: map,
                   position: places[j]["lat_lng"],
-                  //title: list[i]["name"],
-                  //icon: "http://maps.google.com/mapfiles/marker" + list[i]["name"][0] + ".png",
                   url: list[i]["url"],
                   can_open: false,
                   text: "<a href= " + list[i]["url"] + ">" + list[i]["name"] + "</a>\n" + places[j]["reasons"].join() + places[j]["name"]
                 });
-
             var iw = new google.maps.InfoWindow();
 
+            // Add listeners
+            // On mousover, markers show name, facebook link, and what the person did there
             marker.addListener('mouseover', function() {
               iw.setContent(this.text)
               iw.open(map, this);
             });
-
             marker.addListener('mouseout', function() {
               iw.close();
             });
-
+            // Righclicking a marker links to the associated FB page
             google.maps.event.addListener(marker, "rightclick", function(e) {
                 window.open(this.url, '_blank');
             });
-
+            // Add spiderclicking to deal with densely packed (or directly stacked) markers
             oms.addMarker(marker); 
             google.maps.event.addListener(marker, 'spider_click', function(e) {  // 'spider_click', not plain 'click'
             });

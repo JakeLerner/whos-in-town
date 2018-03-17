@@ -6,6 +6,7 @@ def get_friend_list(url_filename):
 	html = get_infinity_scroll_page_with_selenium(driver, webpage)
 	process_fb_friends_html_page(html, url_filename)
 
+# Above function can be called from main.py, but also allow this step to be run alone:
 if __name__ == "__main__":
 	prefix = get_prefix()
 	if prefix:

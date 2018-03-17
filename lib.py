@@ -2,14 +2,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import os, re, mmap, requests, json, argparse, getpass, pip, time, random, codecs, sys
 
-
 # Utility functions:
 def first_regex_or_false(regex, searched_string):
-  namereg = re.findall(regex, searched_string)
-  return namereg[0].encode('utf-8', 'replace') if namereg else ""
+	namereg = re.findall(regex, searched_string)
+	return namereg[0].encode('utf-8', 'replace') if namereg else ""
 
 def quick_sleep():
-  time.sleep(random.randint(0, 2) + random.uniform(0, 1))
+	time.sleep(random.randint(0, 2) + random.uniform(0, 1))
 
 def get_prefix():
 	parser = argparse.ArgumentParser()
@@ -43,17 +42,15 @@ def get_fb_credentials():
 		fb_password = getpass.getpass("Please enter your facebook password:")
 	return {"fb_login": fb_login, "fb_password": fb_password}
 
-
-# Sets up a fake browser to load fb pages in
+# Sets up an automated browser in which to load facebook pages.
 def setup_selenium():
-	# Set up Driver
+	# Setup driver
 	driver = webdriver.Chrome()
-
-	# Login to Facebook
+	# Get credentials
 	fb_credentials = get_fb_credentials()
-	fb_login = fb_credentials["fb_login"] #raw_input("Please enter your facebook username:") # input for python 3.x
-	fb_password = fb_credentials["fb_password"] #getpass.getpass("Please enter your facebook password:")
-
+	fb_login = fb_credentials["fb_login"]
+	fb_password = fb_credentials["fb_password"]
+	# Log in to facebook
 	driver.get("http://www.facebook.com")
 	name_elem = driver.find_element_by_id("email")
 	name_elem.clear()
@@ -61,17 +58,16 @@ def setup_selenium():
 	password = driver.find_element_by_id("pass")
 	password.send_keys(fb_password)
 	password.send_keys(Keys.RETURN)
+	# Return driver to caller
 	return driver
 
 def get_page_with_selenium(driver, url):
 	driver.get(url)
 	return driver.page_source
 
-
 def get_infinity_scroll_page_with_selenium(driver, url, target_file = None):
 	SCROLL_PAUSE_TIME = 5
 	driver.get(url)
-	# Get scroll height
 	last_height = driver.execute_script("return document.body.scrollHeight")
 	while True:
 		driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -80,9 +76,6 @@ def get_infinity_scroll_page_with_selenium(driver, url, target_file = None):
 		if new_height == last_height:
 			break
 		last_height = new_height
-	# if target_file:
-	# 	f = codecs.open(target_file, 'w+', encoding='utf8')
-	# 	  f.write(html)
 	return driver.page_source
 
 def process_fb_friends_html_page(data, url_filename, limit = None):
@@ -95,4 +88,3 @@ def process_fb_friends_html_page(data, url_filename, limit = None):
 	with open(url_filename, 'w+') as new_list_file:
 		for fu in friend_urls:
 			new_list_file.write(fu)
-

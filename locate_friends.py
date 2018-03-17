@@ -25,7 +25,6 @@ def find_places(req):
 				result[name] = {"name" : name, "reasons": [reason]}
 	return result.values()
 
-
 def process_friend_url_selenium(url, verbose = 0, sleepy = True):
 	try:
 		about_url = url.split("?")[0] + "/about"
@@ -43,8 +42,7 @@ def process_friend_url_selenium(url, verbose = 0, sleepy = True):
 		raise
 	except Exception as e:
 		print e
-	 	return { "success": False, "error": e.message }
-
+		return { "success": False, "error": e.message }
 
 def process_all_urls_selenium(urls_file, json_result_file, limit = None, offset = None):
 	global driver
@@ -52,19 +50,18 @@ def process_all_urls_selenium(urls_file, json_result_file, limit = None, offset 
 		driver = setup_selenium()
 	with open(urls_file, 'r+') as file_in:
 		file_in = [url for url in file_in][offset:limit]
-	 	name_address_list = [process_friend_url_selenium(url, 0) for url in file_in]
+		name_address_list = [process_friend_url_selenium(url, 0) for url in file_in]
 	print str(len(name_address_list)) + " friends processed, " + str(len([k for k in name_address_list if k["success"]])) + " successful."
-
 	name_address_json = json.dumps(name_address_list)
 	with open(json_result_file, 'w+') as file_out:
-	 	file_out.write(name_address_json)
+		file_out.write(name_address_json)
 
+# Above functions can be called from main.py, but also allow this step to be run alone:
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--prefix", help="List of URLs of friends to locate")
 	parser.add_argument("--secrets", help="Path of file containing fb credentials and API keys")
-	parser.add_argument("--test", help="Only run the code on the first 20 names",
-	                    action="store_true")
+	parser.add_argument("--test", help="Only run the code on the first 20 names", action="store_true")
 	args = parser.parse_args()
 
 	prefix = args.prefix and args.prefix + '_'
@@ -72,12 +69,11 @@ if __name__ == "__main__":
 	data_directory = os.path.dirname(os.path.realpath(__file__)) + "/data/"
 
 	try:
-	    os.stat(data_directory)
+			os.stat(data_directory)
 	except:
-	    os.mkdir(data_directory)  
+			os.mkdir(data_directory)
 
 	URL_FILE = data_directory + prefix + "friend_urls.txt"
 	JSON_RESULT_FILE = data_directory + prefix + "friend_places.json"
 
 	process_all_urls_selenium(URL_FILE, JSON_RESULT_FILE, limit = 10 if args.test else None)
-
